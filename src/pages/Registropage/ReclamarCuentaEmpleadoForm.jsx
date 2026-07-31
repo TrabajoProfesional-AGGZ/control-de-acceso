@@ -88,11 +88,7 @@ export function ReclamarCuentaEmpleadoForm({ onSuccess, onCancel }) {
       const userCredential = await createUserWithEmailAndPassword(auth, mailLimpio, password);
       usuarioCreado = userCredential.user;
 
-      try {
-        await reclamarCuentaEmpleado(legajoLimpio);
-      } catch (reclamarErr) {
-        console.error('No se pudo marcar la cuenta como reclamada:', reclamarErr);
-      }
+      await reclamarCuentaEmpleado(legajoLimpio);
 
       setExito(true);
       setTimeout(() => {
