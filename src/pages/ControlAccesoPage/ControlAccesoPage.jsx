@@ -1,4 +1,4 @@
-import { ArrowLeft, Home, ScanLine } from 'lucide-react';
+import { Home, ScanLine } from 'lucide-react';
 import { LectorAcceso } from '../../components/LectorAcceso/LectorAcceso';
 import './ControlAccesoPage.css';
 

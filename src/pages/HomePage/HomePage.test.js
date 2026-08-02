@@ -43,7 +43,7 @@ describe('HomePage', () => {
     expect(screen.getByText('Bienvenido Carlos Gomez')).toBeInTheDocument();
   });
 
-  test('el botón "Escanear QR de socio" navega a la pantalla de Control de Acceso y "volver" regresa al inicio', () => {
+  test('el botón "Escanear QR de socio" navega a la pantalla de Control de Acceso y "Ir al inicio" regresa al inicio', () => {
     render(<HomePage empleado={empleado} cerrarSesion={jest.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /escanear qr de socio/i }));
@@ -51,7 +51,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { name: 'Control de Acceso' })).toBeInTheDocument();
     expect(screen.queryByText('Bienvenido Carlos Gomez')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /volver al inicio/i }));
+    fireEvent.click(screen.getByRole('button', { name: /ir a la página principal/i }));
 
     expect(screen.getByText('Bienvenido Carlos Gomez')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Control de Acceso' })).not.toBeInTheDocument();
