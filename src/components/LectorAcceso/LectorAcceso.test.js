@@ -10,16 +10,17 @@ jest.mock('html5-qrcode', () => {
   const instancias = [];
   return {
     __instancias: instancias,
-    Html5QrcodeScanner: jest.fn().mockImplementation(function () {
+    Html5Qrcode: jest.fn().mockImplementation(function () {
       instancias.push(this);
-      this.render = jest.fn((onScanSuccess) => {
+      this.start = jest.fn((_camera, _config, onScanSuccess) => {
         this.onScanSuccess = onScanSuccess;
+        return Promise.resolve();
       });
       this.pause = jest.fn();
       this.resume = jest.fn();
-      this.clear = jest.fn().mockResolvedValue();
+      this.stop = jest.fn().mockResolvedValue();
+      this.clear = jest.fn();
     }),
-    Html5QrcodeScanType: { SCAN_TYPE_CAMERA: 0 },
   };
 });
 
@@ -45,7 +46,7 @@ describe('LectorAcceso', () => {
     expect(document.getElementById('qr-reader')).toBeInTheDocument();
   });
 
-  test('acceso válido: muestra el nombre del socio sobre la cámara', async () => {
+  test('acceso válido: muestra el nombre del socio debajo de la cámara', async () => {
     fetchTo.mockResolvedValueOnce({
       ok: true,
       json: async () => ({

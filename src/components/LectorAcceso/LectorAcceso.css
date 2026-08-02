@@ -1,7 +1,9 @@
 .lector-container {
   padding: var(--space-4) 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
 }
 
 .lector-camara-wrapper {
@@ -37,10 +39,6 @@
   font-weight: 600;
 }
 
-.lector-overlay--exito {
-  background-color: var(--status-success-border);
-}
-
 .lector-overlay--error {
   background-color: var(--status-danger-border);
 }
@@ -61,13 +59,63 @@
   font-weight: 600;
 }
 
-.lector-overlay-estado-financiero {
+.lector-resultado {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  color: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  animation: lector-resultado-entrada var(--transition-normal) ease-out;
+}
+
+@keyframes lector-resultado-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lector-resultado--exito {
+  background-color: var(--status-success-border);
+}
+
+.lector-resultado--error {
+  background-color: var(--status-danger-border);
+}
+
+.lector-resultado-icono {
+  flex-shrink: 0;
+}
+
+.lector-resultado-mensaje {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.lector-resultado-nombre {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lector-resultado-estado-financiero {
   margin: 0;
   font-size: 0.9rem;
   opacity: 0.9;
 }
 
-.lector-overlay-ok {
+.lector-resultado-ok {
   margin-top: var(--space-3);
   padding: var(--space-2) var(--space-8);
   border: none;
@@ -79,6 +127,6 @@
   transition: transform var(--transition-fast);
 }
 
-.lector-overlay-ok:active {
+.lector-resultado-ok:active {
   transform: scale(0.96);
 }

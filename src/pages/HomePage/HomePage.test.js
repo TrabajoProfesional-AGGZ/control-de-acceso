@@ -9,13 +9,13 @@ jest.mock('../../utils/utils', () => ({ fetchTo: jest.fn() }));
 // interesa que la navegación a la pantalla dedicada funcione, no el escaneo en sí
 // (eso lo cubre LectorAcceso.test.js).
 jest.mock('html5-qrcode', () => ({
-  Html5QrcodeScanner: jest.fn().mockImplementation(() => ({
-    render: jest.fn(),
+  Html5Qrcode: jest.fn().mockImplementation(() => ({
+    start: jest.fn().mockResolvedValue(),
     pause: jest.fn(),
     resume: jest.fn(),
-    clear: jest.fn().mockResolvedValue(),
+    stop: jest.fn().mockResolvedValue(),
+    clear: jest.fn(),
   })),
-  Html5QrcodeScanType: { SCAN_TYPE_CAMERA: 0 },
 }));
 
 const empleado = {
