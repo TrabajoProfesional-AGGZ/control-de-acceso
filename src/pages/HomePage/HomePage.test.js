@@ -3,6 +3,20 @@ import { HomePage } from './HomePage';
 
 jest.mock('../../firebase', () => ({ auth: {} }));
 jest.mock('../../utils/authService', () => ({ changePassword: jest.fn() }));
+jest.mock('../../utils/utils', () => ({ fetchTo: jest.fn() }));
+
+// LectorAcceso monta html5-qrcode (requiere cámara real) — para HomePage solo nos
+// interesa que la navegación a la pantalla dedicada funcione, no el escaneo en sí
+// (eso lo cubre LectorAcceso.test.js).
+jest.mock('html5-qrcode', () => ({
+  Html5QrcodeScanner: jest.fn().mockImplementation(() => ({
+    render: jest.fn(),
+    pause: jest.fn(),
+    resume: jest.fn(),
+    clear: jest.fn().mockResolvedValue(),
+  })),
+  Html5QrcodeScanType: { SCAN_TYPE_CAMERA: 0 },
+}));
 
 const empleado = {
   legajo: '1000',
@@ -27,5 +41,19 @@ describe('HomePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /mi perfil/i }));
     expect(screen.getByText('Bienvenido Carlos Gomez')).toBeInTheDocument();
+  });
+
+  test('el botón "Escanear QR de socio" navega a la pantalla de Control de Acceso y "volver" regresa al inicio', () => {
+    render(<HomePage empleado={empleado} cerrarSesion={jest.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /escanear qr de socio/i }));
+
+    expect(screen.getByRole('heading', { name: 'Control de Acceso' })).toBeInTheDocument();
+    expect(screen.queryByText('Bienvenido Carlos Gomez')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /volver al inicio/i }));
+
+    expect(screen.getByText('Bienvenido Carlos Gomez')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Control de Acceso' })).not.toBeInTheDocument();
   });
 });

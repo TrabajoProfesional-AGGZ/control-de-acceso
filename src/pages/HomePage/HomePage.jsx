@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { QrCode } from 'lucide-react';
 import { Header } from '../../components/Header/Header';
 import { WelcomeCard } from '../../components/WelcomeCard/WelcomeCard';
 import { PerfilPage } from '../PerfilPage/PerfilPage';
-import { LectorAcceso } from '../../components/LectorAcceso/LectorAcceso'; 
+import { ControlAccesoPage } from '../ControlAccesoPage/ControlAccesoPage';
 import '../../control-theme.css';
 import './HomePage.css';
 
@@ -20,30 +21,21 @@ export function HomePage({ empleado, cerrarSesion }) {
           <PerfilPage empleado={empleado} cerrarSesion={cerrarSesion} />
         )}
 
-        {vista === 'lector' && (
-          <div className="lector-view-container">
-            <button 
-              onClick={() => setVista('inicio')}
-              className="btn-volver-lector"
-            >
-              ← Volver al inicio
-            </button>
-            
-            <LectorAcceso />
-          </div>
+        {vista === 'control-acceso' && (
+          <ControlAccesoPage onVolver={() => setVista('inicio')} />
         )}
 
         {vista === 'inicio' && (
           <>
             <WelcomeCard empleado={empleado} />
-            
+
             <div className="main-action-container">
-              <button 
-                onClick={() => setVista('lector')}
+              <button
+                onClick={() => setVista('control-acceso')}
                 className="btn-escanear-principal"
               >
-                <span className="lector-icon">📷</span>
-                Escanear Pase de Acceso
+                <QrCode size={48} strokeWidth={1.75} />
+                Escanear QR de socio
               </button>
             </div>
           </>

@@ -1,101 +1,125 @@
 import { useEffect, useState, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
-import { fetchTo } from '../../utils/utils'; 
+import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
+import { CheckCircle2, XCircle } from 'lucide-react';
+import { fetchTo } from '../../utils/utils';
+import './LectorAcceso.css';
+
+const ESTADO_INICIAL = { tipo: null, mensaje: '', nombre: null, estadoFinanciero: null };
 
 export const LectorAcceso = () => {
-  const [estado, setEstado] = useState('escaneando');
-  const [mensaje, setMensaje] = useState('');
-  
-  // Usamos useRef para guardar la instancia del escáner y que no se pierda entre renders
+  const [resultado, setResultado] = useState(ESTADO_INICIAL);
+  const [validando, setValidando] = useState(false);
+
   const scannerRef = useRef(null);
 
   useEffect(() => {
-    // Solo lo inicializamos si no existe
     if (!scannerRef.current) {
       scannerRef.current = new Html5QrcodeScanner(
-        "qr-reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false 
+        'qr-reader',
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+        },
+        false
       );
       scannerRef.current.render(onScanSuccess, onScanFailure);
     }
 
     async function onScanSuccess(decodedText) {
-      // Pausamos el escáner usando la referencia
       if (scannerRef.current) scannerRef.current.pause(true);
-      setEstado('validando');
+      setValidando(true);
 
       try {
-        const partes = decodedText.split('|');
-        if (partes.length !== 2) throw new Error('Formato de QR no reconocido');
-
         const res = await fetchTo('/api/v1/accesos/validar', 'POST', {
           qr_data: decodedText,
         });
+        const data = await res.json();
 
         if (res.ok) {
-          const data = await res.json();
-          setEstado('exito');
-          setMensaje(`¡Acceso permitido para ${data.nombre}!`);
+          setResultado({
+            tipo: 'exito',
+            mensaje: 'Acceso permitido',
+            nombre: data.nombre,
+            estadoFinanciero: data.estado_financiero,
+          });
         } else {
-          setEstado('error');
-          setMensaje('QR inválido o expirado.');
+          const detalle = data.detail;
+          const esDetalleEstructurado = detalle && typeof detalle === 'object';
+          setResultado({
+            tipo: 'error',
+            mensaje: esDetalleEstructurado
+              ? detalle.mensaje
+              : (detalle || 'QR inválido o expirado.'),
+            nombre: esDetalleEstructurado ? detalle.nombre : null,
+            estadoFinanciero: esDetalleEstructurado ? detalle.estado_financiero : null,
+          });
         }
-      } catch (error) {
-        setEstado('error');
-        setMensaje(error.message === 'Formato de QR no reconocido' 
-          ? 'El QR escaneado no pertenece a SocioUnido.' 
-          : 'Error procesando el código.'
-        );
+      } catch {
+        setResultado({
+          tipo: 'error',
+          mensaje: 'Error procesando el código.',
+          nombre: null,
+          estadoFinanciero: null,
+        });
+      } finally {
+        setValidando(false);
       }
-      
-      // A los 3 segundos volvemos a escanear
-      setTimeout(() => {
-        setEstado('escaneando');
-        if (scannerRef.current) scannerRef.current.resume();
-      }, 3000);
     }
 
-    function onScanFailure(error) {
-      console.warn(`Escaneo fallido: ${error}`);
+    function onScanFailure() {
+      // html5-qrcode llama esto en cada frame sin QR detectado: no es un error a mostrar.
     }
 
-    // Cleanup: se ejecuta cuando tocás el botón "Volver al inicio"
     return () => {
       if (scannerRef.current) {
         scannerRef.current.clear().catch(console.error);
         scannerRef.current = null;
       }
     };
-  }, []); // <-- El arreglo vacío asegura que se ejecute una sola vez
+  }, []);
+
+  const cerrarResultado = () => {
+    setResultado(ESTADO_INICIAL);
+    if (scannerRef.current) scannerRef.current.resume();
+  };
 
   return (
-    <div className="lector-container" style={{ textAlign: 'center', padding: '16px', width: '100%' }}>
-      <h2>Control de Acceso</h2>
-      
-      {/* Eliminamos el display 'none', el .pause() ya detiene la cámara correctamente */}
-      <div 
-        id="qr-reader" 
-        style={{ margin: '0 auto', maxWidth: '400px', width: '100%', overflow: 'hidden', borderRadius: '12px' }}
-      />
-      
-      {estado === 'validando' && (
-        <div style={{ color: 'var(--color-text-secondary)', padding: '20px' }}>
-          Validando credencial en el servidor...
-        </div>
-      )}
-      
-      {estado === 'exito' && (
-         <div style={{ backgroundColor: '#4CAF50', color: 'white', padding: '20px', borderRadius: '8px', marginTop: '16px' }}>
-           <h3>✓ {mensaje}</h3>
-         </div>
-      )}
-      
-      {estado === 'error' && (
-         <div style={{ backgroundColor: '#F44336', color: 'white', padding: '20px', borderRadius: '8px', marginTop: '16px' }}>
-           <h3>✕ {mensaje}</h3>
-         </div>
-      )}
+    <div className="lector-container">
+      <div className="lector-camara-wrapper">
+        <div id="qr-reader" className="lector-camara" />
+
+        {validando && (
+          <div className="lector-overlay lector-overlay--validando">
+            <p>Validando credencial...</p>
+          </div>
+        )}
+
+        {resultado.tipo && (
+          <div
+            className={`lector-overlay lector-overlay--${resultado.tipo}`}
+            role="status"
+          >
+            {resultado.tipo === 'exito' ? (
+              <CheckCircle2 size={48} className="lector-overlay-icono" />
+            ) : (
+              <XCircle size={48} className="lector-overlay-icono" />
+            )}
+            <h3 className="lector-overlay-mensaje">{resultado.mensaje}</h3>
+            {resultado.nombre && (
+              <p className="lector-overlay-nombre">{resultado.nombre}</p>
+            )}
+            {resultado.tipo === 'error' && resultado.estadoFinanciero && (
+              <p className="lector-overlay-estado-financiero">
+                Estado financiero: {resultado.estadoFinanciero}
+              </p>
+            )}
+            <button className="lector-overlay-ok" onClick={cerrarResultado}>
+              Ok
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
