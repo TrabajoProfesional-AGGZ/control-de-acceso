@@ -1,7 +1,16 @@
-title: Aplicación móvil (PWA) para empleados
+title: Aplicación móvil para empleados
 description: Documentación de la aplicación móvil (PWA) para empleados de "SocioUnido"
 theme: just-the-docs
 
 url: "https://trabajoprofesional-aggz.github.io"
 
 baseurl: "/control-de-accesos"
+
+exclude:
+  - index.html
+  - src/
+  - public/
+  - node_modules/
+  - package.json
+  - package-lock.json
+  - vite.config.js
