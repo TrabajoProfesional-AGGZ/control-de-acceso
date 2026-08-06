@@ -3,9 +3,6 @@ import { auth } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { fetchTo } from '../utils/utils';
 import { AuthContext } from './authContextObject';
-import { useInactivityLogout } from '../hooks/useInactivityLogout';
-
-const TIEMPO_INACTIVIDAD_MS = 10 * 60 * 1000;
 
 export function AuthProvider({ children }) {
   const [empleado, setEmpleado] = useState(null);
@@ -46,8 +43,6 @@ export function AuthProvider({ children }) {
     await signOut(auth);
     setEmpleado(null);
   }, []);
-
-  useInactivityLogout(Boolean(empleado), TIEMPO_INACTIVIDAD_MS, cerrarSesion);
 
   const value = useMemo(
     () => ({ empleado, setEmpleado, cargandoAuth, authError, cerrarSesion }),
