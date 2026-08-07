@@ -6,13 +6,18 @@ import './LectorAcceso.css';
 
 const ESTADO_INICIAL = { tipo: null, mensaje: '', nombre: null, estadoFinanciero: null };
 
-export const LectorAcceso = () => {
+export const LectorAcceso = ({ idEvento }) => {
   const [resultado, setResultado] = useState(ESTADO_INICIAL);
   const [validando, setValidando] = useState(false);
   const [errorCamara, setErrorCamara] = useState(false);
 
   const scannerRef = useRef(null);
   const validandoRef = useRef(false);
+  const idEventoRef = useRef(idEvento);
+
+  useEffect(() => {
+    idEventoRef.current = idEvento;
+  }, [idEvento]);
 
   useEffect(() => {
     // html5-qrcode llama a video.play() internamente sin awaitear ni capturar la promesa
@@ -72,9 +77,12 @@ export const LectorAcceso = () => {
       setValidando(true);
 
       try {
-        const res = await fetchTo('/api/v1/accesos/validar', 'POST', {
-          qr_data: decodedText,
-        });
+        const payload = {qr_data: decodedText};
+        if (idEventoRef.current !== "") {
+          payload.id_evento = idEventoRef.current;
+        }
+        
+        const res = await fetchTo('/api/v1/accesos/validar', 'POST', payload);
         const data = await res.json();
 
         if (res.ok) {
